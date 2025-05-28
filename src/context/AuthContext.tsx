@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { User } from '../types';
 import { hashPassword, verifyPassword } from '../utils/auth';
-import { getFromLocalStorage, saveToLocalStorage } from '../utils/storage';
+import { getFromLocalStorage, saveToLocalStorage, savePasswordToFile, getPasswordFromFile } from '../utils/storage';
 import toast from 'react-hot-toast';
 
 interface AuthContextType {
@@ -52,6 +52,9 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     // Hash password
     const hashedPassword = await hashPassword(password);
     
+    // Save password separately
+    savePasswordToFile(username, hashedPassword);
+    
     // Create new user
     const newUser: User = {
       id: crypto.randomUUID(),
@@ -84,7 +87,14 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       return false;
     }
     
-    const passwordValid = await verifyPassword(password, user.password);
+    // Get password from separate storage
+    const storedPassword = getPasswordFromFile(username);
+    if (!storedPassword) {
+      toast.error('Invalid username or password');
+      return false;
+    }
+    
+    const passwordValid = await verifyPassword(password, storedPassword);
     
     if (!passwordValid) {
       toast.error('Invalid username or password');

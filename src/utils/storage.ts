@@ -20,6 +20,19 @@ export function saveToLocalStorage<T>(key: string, data: T): void {
   }
 }
 
+// Save passwords to a separate file
+export function savePasswordToFile(username: string, hashedPassword: string): void {
+  const passwords = getFromLocalStorage<Record<string, string>>('passwords') || {};
+  passwords[username] = hashedPassword;
+  saveToLocalStorage('passwords', passwords);
+}
+
+// Get password from file
+export function getPasswordFromFile(username: string): string | null {
+  const passwords = getFromLocalStorage<Record<string, string>>('passwords');
+  return passwords?.[username] || null;
+}
+
 // Initialize demo data if not already present
 export function initializeDemoData(): void {
   // Initialize games if not present
@@ -51,5 +64,10 @@ export function initializeDemoData(): void {
       }
     ];
     localStorage.setItem('games', JSON.stringify(games));
+  }
+  
+  // Initialize passwords file if not present
+  if (!localStorage.getItem('passwords')) {
+    localStorage.setItem('passwords', JSON.stringify({}));
   }
 }

@@ -41,6 +41,7 @@ export interface ChatMessage {
   senderId: string;
   content: string;
   timestamp: string;
+  read: boolean;
 }
 
 export interface Notification {

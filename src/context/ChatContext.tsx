@@ -9,6 +9,7 @@ interface ChatContextType {
   messages: ChatMessage[];
   sendMessage: (content: string) => void;
   clearChat: () => void;
+  getUnreadCount: () => number;
 }
 
 const ChatContext = createContext<ChatContextType | undefined>(undefined);
@@ -36,8 +37,9 @@ export const ChatProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     const newMessage: ChatMessage = {
       id: uuidv4(),
       senderId: currentUser.id,
-      content,
-      timestamp: new Date().toISOString()
+      content: content.trim(),
+      timestamp: new Date().toISOString(),
+      read: false
     };
     
     const updatedMessages = [...messages, newMessage];
@@ -51,8 +53,13 @@ export const ChatProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     toast.success('Chat cleared');
   };
 
+  const getUnreadCount = () => {
+    if (!currentUser) return 0;
+    return messages.filter(m => !m.read && m.senderId !== currentUser.id).length;
+  };
+
   return (
-    <ChatContext.Provider value={{ messages, sendMessage, clearChat }}>
+    <ChatContext.Provider value={{ messages, sendMessage, clearChat, getUnreadCount }}>
       {children}
     </ChatContext.Provider>
   );
